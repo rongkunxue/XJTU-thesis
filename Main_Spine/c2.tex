@@ -1,338 +1,70 @@
 % !TeX root = ../main.tex
-
-\xchapter{浮动体：图表}{Floating: Figures, Tables}
-
-请先注意，在\LaTeX 中，图表不一定要像 Word 一样被固定在某个区域，程序会自动根据上下文为图片选择合适的位置，同时还有具有超链接的交叉引用自动定位图片位置，因此不要强求图片或表格一定处于某个位置。如非要定位，则应在浮动体环境中使用\clist{[H]}选项指定位置。
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 图、表、公式等一律用阿拉伯数字分章连续编号，如 图1-3、表2-1、（3-2）等。图、表、公式等与正文之间间隔0.5行。
-
-    \item 图应有图题，表应有表题，并分别置于图号和表号之后，图号和图题应置于图下方的居中位置，表号和表题应置于表上方的居中位置。引用图或表应在图题或表题右上角标出文献来源。
-
-    \item 若图或表中有附注，采用英文小写字母顺序编号，附注写在图或表的下方。
-  \end{enumerate}
-\end{tcolorbox}
-
-\xsection{图}{Figures}
+\xchapter{统一可逆生成框架}{Crossreferences}
+\xsection{引言}{Introduction}
+生成对抗网络~\cite{goodfellow2020generative}通过对抗训练生成图像，但该范式在训练过程中往往引入不稳定性，且难以稳定扩展到更大规模。另一方面，受Simoncelli E. P.等早期在噪声建模与统计物理相关研究的启发~\cite{simoncelli1996noise,hyvarinen2005estimation,sohl2015deep}，生成模型（Diffusion Models）在DDPM~\cite{ho2020denoising}与基于分布分数的SBDM框架~\cite{song2021maximum,song2020score}中被系统化提出并迅速发展。
+从经典随机过程视角，生成模型常可概括为流模型、扩散模型与桥模型三类。尽管三者在随机过程的具体构造与训练形式上存在差异，但流模型与扩散模型在本质上都利用神经网络刻画一个时间连续的随机动力系统${x_t}$：其训练目标是学习由简单先验分布$p_0(\epsilon)$向数据分布$p_1(x)$演化的概率流，并通过求解该随机过程的逆向随机微分方程（reverse-time SDE）或等价的概率流常微分方程（probability flow ODE），实现从噪声到数据样本的可采样映射。相比之下，桥模型可视为在给定初末分布约束下的条件化流模型，即在保持端点分布一致性的前提下，对上述概率流过程进一步施加路径层面的约束，从而实现受控的分布迁移。
+在此基础上，研究社区通常从提升神经网络的建模能力~\cite{ho2020denoising,nichol2021improved,rombach2022high,peebles2023scalable,bao2023all}与改进生成路径~\cite{lipman2022flow,peluchetti2023non,tong2023improving,shi2023diffusion,zhou2024denoising}两方面入手，以获得更稳定且更高保真的生成结果。
 
 
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 插图须紧跟文述。在正文中，一般应先见图号及图的内容后再见图，一般情况下不能提前见图，特殊情况须延后的插图不应跨节；
-    \item 提供照片应大小适宜，主题明确，层次清楚，金相照片一定要有比例尺；
-    \item 图应具有“自明性”，即只看图、图题和图例，不阅读正文，就可理解图意。图中的标目是说明坐标轴物理意义的项目，它是由物理量的符号或名称和相应的单位组成。物理量的符号由斜体字母标注，单位的符号使用正体字母标注，量与单位间用斜线隔开。例如：$I/\SI{}{A}$，$\rho/\SI{}{kg\cdot m^{-3}}$，$F/\SI{}{N}$，$v/\SI{}{m\cdot s^{-1}}$等等；
-    \item 图中用字为五号，如排列过密，用五号字有困难时，可小于五号字，但不得小于七号字；
-    \item 图尺寸的\textbf{一般宽高比}应为 \SI{6.67}{cm}$\times$\SI{5.00}{cm}。特殊情况下，也可为 \SI{9.00}{cm}$\times$\SI{6.75}{cm}，或 \SI{13.5}{cm}$\times$\SI{9.00}{cm}。总之，一篇论文中，同类图片的大小应该一致，编排美观、整齐；
-    \item 一幅图如有若干幅\textbf{分图}，均应编分图号，用(a)，(b)，(c),...... 按顺序编排，且各分图的分题注直接列在各自分图的正下方，总题注列在所有分图的下方正中「
-  \end{enumerate}
-\end{tcolorbox}
+在提高神经网络的建模能力方面，
+Jain等人~\cite{ho2020denoising}提出的 DDPM 工作提出将 UNet 作为时间条件去噪器的范式，即以对称的编码器与解码器结构在多尺度上提取特征，并通过长跳跃连接对齐浅层纹理信息与深层语义信息，同时将时间步嵌入注入到残差块中以建模不同噪声尺度下的去噪映射。该设计使模型能够在所有 $t$ 上对扰动分布 $q(x_t)$ 的去噪方向进行稳定学习，从而以逐步反演的方式逼近数据分布。随后，Nichol 与 Dhariwal~\cite{nichol2021improved}系统讨论了注意力层设计、噪声方差参数化与训练目标等因素对对数似然与生成质量的影响，Rombach 等人~\cite{rombach2022high}在潜空间扩散模型中将去噪过程转移到自编码器潜表示上，并在 UNet 中引入交叉注意力层以实现对文本与边界框等更一般条件的选择性融合，从而在降低计算成本的同时保持高分辨率细节生成能力，将扩散模型的生成质量推进到可与当时 GAN 竞争的水平。Peebles 与 Xie 提出的 DiT~\cite{peebles2023scalable}以 Transformer 替代传统 UNet 主干，在隐空间上执行去噪建模，并通过归一化调制等方式将时间步与条件信息注入到 Transformer 块中，展示了随模型深度、宽度与 token 数增长而持续收益的可扩展性，为扩散模型借鉴大模型训练范式与大规模数据训练提供了更直接的结构基础。进一步地，Bao 等人在 U-ViT~\cite{bao2023all}中提出 U 形模型主干并指出对扩散模型而言长跳跃连接是关键结构要素，而卷积 UNet 网络中的下采样与上采样算子并非总是必要，通过在浅层与深层 Transformer 块之间建立跨层特征通路可以改善收敛与细节生成质量，从而为探索更一般的扩散主干设计打开空间。总体上来看，以 Transformer 为主干的扩散网络正逐步与基于交叉注意力、归一化调制与旁路控制分支的条件注入机制相结合，使扩散模型在可扩展性与可控生成两方面同步增强。
 
-\xsubsection{单张图片的使用}{Single Figure}
+在改进生成路径方面，Lipman 等人~\cite{lipman2022flow}提出用于图像生成的流匹配方法，其核心是直接学习连续时间速度场或等价的概率流，从而在采样时沿确定性或随机动力学将简单先验逐步推送到数据分布。通过采用合适的扩散桥混合，可以构造连接端点分布的扩散过程并实现对目标数据分布的生成~\cite{peluchetti2023non}。在此基础上，Tong等人~\cite{tong2023improving}引入广义条件流匹配技术，将外部条件视为对流场的约束或对端点的指定，使得条件信息能够以输入拼接、特征调制或注意力融合等方式注入参数化的主干网络中，并在训练阶段直接对齐条件下的路径分布。进一步地，针对更一般的桥建模需求，Shi 等人~\cite{shi2023diffusion}通过迭代式的马尔可夫拟合求解薛定谔桥的近似迭代，并以得分网络作为核心参数化模块，从而在同一主干上同时刻画中间时刻的去噪动力学与端点约束的桥一致性。Zhou 等人~\cite{zhou2024denoising}则将扩散桥显式作为生成与变换的统一建模对象，使用与扩散模型相同的得分网络主干来学习桥过程的得分函数，并将端点条件以输入端点样本、特征级注入或多尺度通路的形式并入网络，使得从给定源端点到目标端点的采样可通过求解相应随机微分方程直接完成。这些工作使生成路径不再局限于从噪声到数据的单端点设定，而是能够在更一般的端点约束与条件变换场景中复用生成模型的主干结构与训练范式，从而为生成模型向具身智能与基础科学等更广泛领域的拓展提供了更直接的技术基础。
 
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \centering
-    \includegraphics[width=.5\textwidth]{xjtu.pdf}
-    \caption{校徽}
-  \end{figure}
-\end{texcodeonly}
+然而，从上述两个方向可以看到，现有方法总体上仍以某一特定任务为目标，尚缺少能够同时覆盖流模型、扩散模型与桥模型的统一可逆生成框架。具体而言，仍主要围绕计算机视觉中的图像生成、视频生成与图像补全等单一任务展开，对生成模型在更一般机器学习问题及具身智能等下游场景中的迁移性与泛化性关注不足，因而难以形成面向多任务的共享表征与可复用训练范式。与此同时，当方法需要显式调用 ODE/SDE 等偏微分方程相关的数值求解器以实现更灵活的路径建模与约束注入时，现有方案往往依赖对网络结构、条件注入通路或离散化策略进行专门设计，导致模型主干与生成路径之间高度耦合，缺乏清晰的模块化分解与可复用接口，进而难以系统性支撑大规模预训练与向下游任务的高效迁移。更进一步，尽管概率流与逆向动力学在理论上蕴含可逆结构，许多方法并未充分挖掘这一结构来统一支撑信息重建、推断与可控生成等能力，在实践中，求解过程也常因不可微实现、截断近似或算子封装等因素，难以在 ODE/SDE 求解器层面实现端到端的梯度反向传播，从而限制了生成过程与下游目标的联合优化能力，阻碍了模型整体训练与任务微调。
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=.5\textwidth]{xjtu.pdf}
-  \caption{校徽}
-\end{figure}
+因此，本文旨在从统一的视角出发，建立分数匹配与流匹配在模型建模方式与训练目标上的内在对应关系，并进一步刻画扩散路径与数值求解器之间的耦合机理。具体而言，本文一方面将不同扩散建模范式归一到一致的优化目标表述中，使得在同一主干网络参数化下，可以自由切换分数匹配或流匹配式用于建模或是训练，从而实现不同扩散方法与神经网络建模之间的系统化配合。
+另一方面，本文将扩散路径视为连续动力系统的实例化结果，将求解器视为可替换的推断与训练组件，使得采样与反向传播能够在统一接口下完成，并支持通过替换不同求解器来平衡生成质量、稳定性与计算开销。
+为进一步支持可逆扩散与端到端训练，本文引入 Hutchinson 迹估计器以高效近似连续动力学中的迹相关项，从而在不显著增加计算与内存成本的前提下获得可微的训练信号，并使基于求解器的梯度更新计算更可行、更稳定。
+整体上，该框架在数学层面兼容多类扩散生成模型及其变体，同时在工程实现上支持以可插拔求解器完成训练与推断流程的统一。该框架受到社区的广泛关注，已在航天材料生成~\cite{yang2024data,zhang2025funcgenfoil}、图像合成~\cite{Xue_2025_ICCV}、强化学习~\cite{zhang2024generative_rl}等领域上获得应用与验证。
 
-一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。
+\xsection{生成模型框架}{Generative Model}
+本文将首先介绍扩散模型与流模型的数学刻画，并讨论如何在统一的连续时间动力学框架下理解二者的建模与训练目标。
 
-\xsubsection{多张图片：应该使用 subcaption 而不是 subfigure}{Use subcaption instead of subfigure}
+\xsubsection{扩散模型}{Diffusion Model}
+令 $t$ 表示时间参数，记生成轨迹在时刻 $t$ 的随机变量为 $x_t$，其边缘分布记为 $p_t$。其中 $x_0 \sim p_{\mathrm{data}}$ 表示原始数据样本，也即原图；$x_1 \sim p_1$ 表示扩散终止时的先验分布，通常取为标准高斯 $\mathcal{N}(0,I)$。
 
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \begin{subfigure}[b]{0.49\linewidth}
-        \centering
-        \includegraphics[width=.5\textwidth]{xjtu.pdf}
-        \subcaption{校名}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.49\linewidth}
-        \centering
-        \includegraphics[width=.5\textwidth]{xjtu.pdf}
-        \subcaption{校名}
-        \label{subfigure:icon}
-    \end{subfigure}
-    \caption{校徽}
-    \label{fig:icon}
-  \end{figure}
-\end{texcodeonly}
+扩散模型的核心思想是通过学习反向动力学来逆转一个前向扩散过程。前向加噪在条件分布层面可写为
+\begin{equation}\label{eq:forward_diffusion}
+p(x_t \mid x_0) \sim \mathcal{N}\!\left(x_t \,\middle|\, \alpha_t x_0,\; \sigma_t^2 I\right),
+\end{equation}
+其中 $\alpha_t$ 为缩放系数，$\sigma_t^2$ 为噪声方差，$I$ 为单位矩阵。
+因此$x_t$可以由式\cref{eq:x_t_eq}表达
+\begin{equation}\label{eq:x_t_eq}
+x_t = \alpha_t x_0 + \sigma_t \epsilon,\qquad \epsilon \sim \mathcal{N}(0,I).
+\end{equation}
+在常见的扩散路径设定中，$\alpha_t$ 随 $t$ 单调递减而 $\sigma_t$ 随 $t$ 单调递增，从而使样本分布沿时间从 $p_{\mathrm{data}}$ 平滑过渡到先验噪声分布。
+进一步地，在随机插值与流匹配一类设定中，常将时间范围限制为 $t \in [0,1]$，并施加端点条件
+\[
+\alpha_0 = 1,\ \sigma_0 = 0,\qquad \alpha_1 = 0,\ \sigma_1 = 1,
+\]
+于是 $x_{t=0}=x_0$ 且 $x_{t=1}=\epsilon$，从而 $x_t$ 在数据样本与标准高斯噪声之间形成精确的插值路径。
+通常将 $t \in [0,1]$ 视为前向扩散过程的演化方向，即从数据逐步走向噪声先验，
+相应地，生成过程对应其反向动力学，可写作 $t \in [1,0]$。
+如\cref{eq:forward_diffusion}所示，系数 $\alpha_t$ 与 $\sigma_t$ 决定了时刻 $t$ 的扰动状态 $x_t$，并且二者均为时间 $t$ 的函数。因而，$\{\alpha_t,\sigma_t\}_{t\in[0,1]}$ 也可视为对前向扩散过程的一种路径参数化，常被称为扩散轨迹。在给定相同的起点样本 $x_0$ 与终点噪声 $\epsilon$ 的条件下，不同的系数函数将诱导不同的中间状态分布 $p_t$，从而对应不同的扩散轨迹。
 
-\begin{figure}[h]
-  \begin{subfigure}[b]{0.49\linewidth}
-      \centering
-      \includegraphics[width=.5\textwidth]{xjtu.pdf}
-      \subcaption{校名}
-  \end{subfigure}
-  \begin{subfigure}[b]{0.49\linewidth}
-      \centering
-      \includegraphics[width=.5\textwidth]{xjtu.pdf}
-      \subcaption{校名}
-      \label{subfigure:icon}
-  \end{subfigure}
-  \caption{校徽}
-  \label{figure:icon}
-\end{figure}
+本文采用广义的 VP-SDE 路径参数化，即选取三角函数系数来定义扩散路径，其形式为
+\[
+\alpha_t = \cos\!\left(\frac{\pi t}{2}\right), \qquad 
+\sigma_t = \sin\!\left(\frac{\pi t}{2}\right).
+\]
+该选择满足恒等式 $\alpha_t^2+\sigma_t^2=1$，因此可使边缘方差随时间保持近似恒定，从而体现出方差保持的特性，可以在训练稳定性与生成质量之间保持较高的质量。
 
-\xsubsection{多张子图分页}{Break multiple figures}
-
-\newcommand{\subfigg}{
-  \begin{subfigure}[b]{0.49\linewidth}
-    \centering
-    \includegraphics[width=.5\textwidth]{xjtu.pdf}
-    \subcaption{校名}
-  \end{subfigure}
-}
-
-为了简化叙述，定义一个命令 \clist{\subfigg} 代表插入一个子图：
-\begin{texcodeonly}[]{}
-  \newcommand{\subfigg}{
-    \begin{subfigure}[b]{0.49\linewidth}
-      \centering
-      \includegraphics[width=.5\textwidth]{xjtu.pdf}
-      \subcaption{校名}
-    \end{subfigure}
-  }
-\end{texcodeonly}
-
-在\clist[columbiablue]{subfig}宏包中提供了\clist{\ContinuedFloat}命令，使一个浮动体环境与其内子图的编号跟随前一个子图，此时两个浮动体环境可以分别设置标题，若具有相同的标题，或后续图的标题设置为 \clist{（续）}，则可以实现子图分页的效果。同时，模板提供了 \clist{\floatcontinue} ，通过包装\clist{\ContinuedFloat}使得子图在此命令处断页，不产生图标题，并在下一页生成图题。此两种命令均可使用，按照喜欢或需求使用。
-\clearpage
-\subsubsection{使用 ContinuedFloat}
-
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \subfigg    \subfigg
-    \caption{校徽}
-  \end{figure}
-  
-  \begin{figure}[H]
-    \ContinuedFloat
-    \subfigg    \subfigg
-    \subfigg    \subfigg
-    \caption{校徽} % 或 \caption{（续）}
-  \end{figure}
-\end{texcodeonly}
-
-\begin{figure}[h]
-  \subfigg    \subfigg
-  \caption{校徽}
-\end{figure}
-
-\begin{figure}[H]
-  \ContinuedFloat
-  \subfigg    \subfigg
-  \subfigg    \subfigg
-  \caption{校徽} % 或 \caption{（续）}
-\end{figure}
-
-\subsubsection{使用 floatcontinue}
-
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \subfigg    \subfigg
-    \floatcontinue{tb}
-    \subfigg    \subfigg
-    \subfigg    \subfigg
-    \caption{校徽}
-  \end{figure}
-\end{texcodeonly}
-
-\begin{figure}[h]
-  \subfigg    \subfigg
-  \floatcontinue{tb}
-  \subfigg    \subfigg
-  \subfigg    \subfigg
-  \caption{校徽}
-\end{figure}
+\xsubsection{流模型}{Flow Model}
+与扩散模型通过随机扰动并学习其反向随机动力学不同，流模型通常以确定性连续时间动力系统为基础，通过学习一个时间依赖的速度场，将简单先验分布逐步变换为数据分布。设 $t\in[0,1]$ 表示变换时间，$x_t\in\mathbb{R}^d$ 为随时间演化的随机变量，流模型假设其轨迹满足如下常微分方程
+\begin{equation}\label{eq:flow_ode}
+\frac{\mathrm{d}x_t}{\mathrm{d}t} = v_\theta(x_t,t),
+\end{equation}
+其中 $v_\theta(\cdot,t)$ 为可学习的速度场，通常由神经网络参数化。由动力系统诱导的边缘分布 $p_t(x)$ 满足连续性方程
+\begin{equation}\label{eq:continuity_eq}
+\partial_t p_t(x) + \nabla\!\cdot\!\bigl(p_t(x)\,v_\theta(x,t)\bigr)=0,
+\end{equation}
+因此只要 $v_\theta$ 足够表达真实的传输场，便可在 $t=1$ 将先验分布 $p_1$ 精确推送到 $p_0\approx p_{\mathrm{data}}$。在生成时，通常从 $x_1\sim p_1$ 出发，沿时间反向求解 \cref{eq:flow_ode} 得到 $x_0$，从而实现样本生成。与离散化的归一化流模型相比，\cref{eq:flow_ode} 对应的连续归一化流（Continuous Normalizing Flow, CNF）提供了更自然的连续时间表述，其对数密度可通过伴随 ODE 或瞬时雅可比迹来更新
+\begin{equation}\label{eq:cnf_logp}
+\frac{\mathrm{d}}{\mathrm{d}t}\log p_t(x_t) = - \nabla\!\cdot v_\theta(x_t,t),
+\end{equation}
+从而在训练阶段可以最大化似然或最小化相关的 KL 目标。
 
 
-\clearpage
-
-\xsection{表}{Tables}
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 如某个表需要转页接排，在随后的各页上应重复表的编号。编号后跟表题（可省略）和“（续）”，如表 1-1（续），续表均应重复表头和关于单位的陈述。表格的设计应紧跟文述。表的编排一般是内容和测试项目由左至右横读，数据依序竖读，应有自明性。若为大表或作为工具使用的表格，可作为附表在附录中给出，论文中的表格参数应标明量和单位的符号；
-    \item 表中各物理量及量纲均按国际标准(SI) 及国家规定的法定符号和法定计量单位标注；
-    \item 一律使用三线表，与文字齐宽，顶线与底线线粗为 $1.5$ pt，中线线粗是 $1$ pt；
-    \item 使用他人表格须注明出处。
-    \item 表中用字为五号字体。如排列过密，用五号字有困难时，可小于五号字，但不小于七号。
-    \item 表格必须通栏，即表格宽度与正文版面平齐。
-  \end{enumerate}
-\end{tcolorbox}
 
 
-\xsubsection{普通表格}{Normal Tables}
-
-
-考虑到使用成本、内容与样式分离。模板默认调用现代化的表格绘制宏包 \clist[columbiablue]{tabularray}。该宏包的使用方法请使用 \clist{texdoc tabularray}，网上也有此手册的中文翻译。请确保使用的发行版包含这一宏包（即更新至 2023 及以后的版本）。
-
-非跨页表格应使用 tblr 环境制作表格，使用 table 作为浮动体环境，使用 \clist{\toprule}，\clist{\midrule} 和 \clist{\bottomrule} 指定三线表的三条线：
-
-\begin{texcode}[]{}
-    \begin{table}[H]
-        \caption{tblr 基本用法}
-        \label{tbl:2-1}
-        \begin{tblr}{
-            % colspec={X[r,m,2]X[c,3]X[l,1]}
-            X[r,m,2]X[c,3]X[l,1]
-        }
-            \toprule
-            Head & Test & 测试 \\
-            \midrule
-            Class that has many accessor methods and accesses a lot of external data & ATFD is more than a few & 3 \\
-            1 & 2 & 3 \\
-            1 & 2 & 3 \\
-            \bottomrule
-        \end{tblr}
-    \end{table}
-\end{texcode}
-
-tblr 环境各列的对齐方式可以以键值对的方式在必选参数中设置，或者直接作为唯一必选参数（参考 tabularray 手册第 24 页）。列类型包括 c/l/r, t/b/m, X 等。c/l/r 为默认的三种对齐方式，t/b/m 指定单元格内容超过列宽时垂直方向的对齐方式， X 类型会自动调整列宽使全表宽度与页宽一致，X 类型列的水平、垂直对齐方式以类似 X[c] 的方式在 X 后的方括号内指定。X 类型后的方括号可以指定此列宽度与其他X类列宽度的相对大小，也可使用 \clist{wd=A}直接指定列宽。推荐使用 X 作为列类型。
-
-\begin{texcode}[]{}
-    \begin{tblr}{
-        colspec={|ll|X[c]|rr|},
-        cell{1}{1}={r=3,c=2}{r,m},
-        cell{1}{3}={r=2,c=3}{l,t},
-        cell{3}{Z}={}{red},
-        hline{4-6}={2pt,blue},
-    }
-        \hline
-        1-1 & 1-2 & 1-3 & 1-4 & 1-5 \\
-        \hline
-        2-1 & 2-2 & 2-3 & 2-4 & 2-5 \\
-        \hline
-        3-1 & 3-2 & MIDDLE & 3-4 & 3-5 \\
-        % \hline (4th)
-        4-1 & 4-2 & 4-3 & 4-4 & 4-5 \\
-        % \hline (5th)
-        5-1 & 5-2 & 5-3 & 5-4 & 5-5 \\
-        % \hline (6th)
-    \end{tblr}
-\end{texcode}
-
-tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。单元格的合并，文字、背景、边框的样式都可以放在参数中设置。 \clist{cell{R}{C}={merge}{style}}用于设置单元格合并，其中 R,C 指定合并单元格左上角的位置，merge参数指定合并多少行多少列，style 调整合并后的单元格样式，其中 R,C 除了使用行号进行索引，可以使用 X,Y,Z 索引倒数第三、二、一行/列，可以使用 odd/even 选择 奇/偶列，还可以使用连字符(dash)选择区间，非常方便。
-
-\xsubsection{复杂表格}{Complicated tables}
-
-在三线表中可以加辅助线，以适应较复杂表格的需要，具体使用方法请自行阅读宏包：
-
-\begin{texcode}[]{}
-\begin{table}[H]
-  \centering
-  \caption{compare with other approachs}
-  \label{table:methodcompare}
-  \begin{tblr}{
-      colspec={*{7}{X[c]}},
-      cell{1}{1}={r=2}{c,m},
-      cell{1}{2,5}={c=3}{c,m},
-      hline{2,4,6}={1pt},
-      hline{1,3,Z}={1.5pt},
-      row{4,5}={rowsep=0pt},
-      row{Z}={m,font=\bfseries},
-  }
-    Model & trigger inditification & & & Event Extraction & & \\
-    & P(\%) & R(\%) & F1(\%) & P(\%) & R(\%) & F1(\%) \\
-    Baseline1 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Baseline2  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Baseline3  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Our approach  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-  \end{tblr}
-\end{table}
-\end{texcode}
-
-\xsubsection{长表格}{Long Tables}
-
-当表格过长时，使用\clist{longtblr}环境，此时不需要浮动体环境。在可选参数中需要设置\clist{theme=xjtu_std}，以调用预先设置好的续表样式，同时设置表格标题、label、脚注等，具体使用方法请自行阅读宏包。
-
-\begin{texcodeonly}[]{}
-    \begin{longtblr}[
-        theme = xjtu_std,
-        caption = {A Long Long Long Long Long Long Long Table },
-        entry = {Short Caption},
-        label = {tblr:test},
-        note{a} = {脚注},
-        note{$\dag$} = {还是脚注},
-        remark{Note} = {注释，即表格内没有标注符号的脚注},
-        remark{Source} = {还是注释},
-    ]{
-        colspec = {XX[c]X},
-        rowhead = 1, rowfoot = 0,
-    }
-    \toprule
-    Head & Head & Head \\
-    \midrule
-    Epsilon & Zeta\TblrNote{a} & Eta \\
-    Iota & Kappa\TblrNote{$\dag$} & Lambda \\
-    Nu & Xi & Omicron \\
-    \dots 
-    Foot & Foot & Foot \\
-    \bottomrule
-    \end{longtblr}
-\end{texcodeonly}
-
-\begin{longtblr}[
-        theme = xjtu_std,
-        caption = {A Long Long Long Long Long Long Long Table },
-        entry = {Short Caption},
-        label = {tblr:test},
-        note{a} = {脚注},
-        note{$\dag$} = {还是脚注},
-        remark{Note} = {注释，即表格内没有标注符号的脚注},
-        remark{Source} = {还是注释},
-    ]{
-        colspec = {XX[c]X},
-        rowhead = 1, rowfoot = 0,
-    }
-    \toprule
-    Head & Head & Head \\
-    \midrule
-    Head & Head & Head \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta\TblrNote{a} & Eta \\
-    Iota & Kappa\TblrNote{$\dag$} & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    %
-    % ......
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    % Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    \midrule
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    \bottomrule
-\end{longtblr}
